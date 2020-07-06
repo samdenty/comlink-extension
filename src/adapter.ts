@@ -52,8 +52,7 @@ export function createEndpoint(
     postMessage: (message, transfer: MessagePort[]) => {
       for (const port of transfer) {
         const id = PORT_ID + `${+new Date()}${Math.random()}`;
-        // @ts-ignore
-        fromPort[PORT_ID] = id;
+        (port as any)[PORT_ID] = id;
         forward(port, resolvePort(id), resolvePort, deserializePort);
       }
       port.postMessage(message);
