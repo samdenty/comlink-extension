@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "alwaysStrict": false,
+    "noImplicitUseStrict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "strict": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "downlevelIteration": true,
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "skipLibCheck": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "target": "ES2019",
+    "jsx": "react",
+    "lib": ["esnext", "webworker", "dom"],
+    "declaration": true,
+    "rootDir": "src",
+    "outDir": "dist"
+  }
+}

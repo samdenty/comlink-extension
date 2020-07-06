@@ -1,0 +1,19 @@
+{
+  "name": "comlink-extension",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/samdenty/comlink-extension",
+  "author": "Sam Denty <samddenty@gmail.com>",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "comlink": "^4.3.0",
+    "typescript": "^3.9.6",
+    "webextension-polyfill-ts": "^0.19.0"
+  }
+}
