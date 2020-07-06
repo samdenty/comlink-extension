@@ -30,10 +30,11 @@ Content / popup / devtool script:
 import { createEndpoint, forward } from "comlink-extension";
 import * as Comlink from "comlink";
 
+// Wrap a chrome.runtime.Port
 const obj = Comlink.wrap(createEndpoint(chrome.runtime.connect()));
 obj.test();
 
-// OR, using message channels:
+// Or, wrap an existing Message Channel:
 const { port1, port2 } = new MessageChannel();
 forward(port1, chrome.runtime.connect());
 
