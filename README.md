@@ -1,6 +1,6 @@
 # Comlink for Web Extensions
 
-This module allows you to use Comlink for Background <-> Content/Popup scripts.
+This module allows you to use [Comlink](https://github.com/GoogleChromeLabs/comlink) for Background <-> Content/Popup communication, in Chrome/Firefox/Safari extensions.
 
 ## Usage
 
