@@ -1,6 +1,6 @@
 {
   "name": "comlink-extension",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "repository": "https://github.com/samdenty/comlink-extension",
@@ -12,9 +12,11 @@
   "scripts": {
     "build": "tsc"
   },
+  "dependencies": {
+    "webextension-polyfill-ts": "^0.19.0"
+  },
   "devDependencies": {
     "comlink": "^4.3.0",
-    "typescript": "^3.9.6",
-    "webextension-polyfill-ts": "^0.19.0"
+    "typescript": "^3.9.6"
   }
 }

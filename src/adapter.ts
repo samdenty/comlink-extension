@@ -1,7 +1,7 @@
 import { browser, Runtime } from "webextension-polyfill-ts";
 import * as Comlink from "comlink";
 
-const PORT_ID = "@@@PORT_ID";
+const SYMBOL = "__PORT__@";
 
 export type PortResolver = (id: string) => ResolvablePort;
 export type PortDeserializer = (id: string) => MessagePort;
@@ -18,50 +18,94 @@ function _deserializePort(id: string) {
   return port2;
 }
 
-function deserialize(
-  data: any,
-  ports: any[],
-  deserializePort: PortDeserializer
-): any {
-  if (Array.isArray(data)) {
-    data.forEach((value, i) => {
-      data[i] = deserialize(value, ports, deserializePort);
-    });
-  } else if (data && typeof data === "object") {
-    const id = data[PORT_ID];
-    if (id) {
-      const port = deserializePort(id);
-      ports.push(port);
-      return port;
-    }
-
-    for (const key in data) {
-      data[key] = deserialize(data[key], ports, deserializePort);
-    }
-  }
-  return data;
-}
-
 export function createEndpoint(
   port: Runtime.Port,
   resolvePort: PortResolver = _resolvePort,
   deserializePort: PortDeserializer = _deserializePort
 ): Comlink.Endpoint {
   const listeners = new WeakMap();
+
+  function serialize(data: any): void {
+    if (Array.isArray(data)) {
+      data.forEach((value, i) => {
+        serialize(value);
+      });
+    } else if (data && typeof data === "object") {
+      if (data instanceof MessagePort) {
+        const id = SYMBOL + `${+new Date()}${Math.random()}`;
+        (data as any)[SYMBOL] = "port";
+        (data as any).port = id;
+        forward(data, resolvePort(id), resolvePort, deserializePort);
+      } else if (data instanceof ArrayBuffer) {
+        (data as any)[SYMBOL] =
+          data instanceof Uint8Array
+            ? "uint8"
+            : data instanceof Uint16Array
+            ? "uint16"
+            : data instanceof Uint32Array
+            ? "uint32"
+            : "buffer";
+
+        (data as any).blob = URL.createObjectURL(new Blob([data]));
+      } else {
+        for (const key in data) {
+          serialize(data[key]);
+        }
+      }
+    }
+  }
+
+  async function deserialize(data: any, ports: any[]): Promise<any> {
+    if (Array.isArray(data)) {
+      await Promise.all(
+        data.map(async (value, i) => {
+          data[i] = await deserialize(value, ports);
+        })
+      );
+    } else if (data && typeof data === "object") {
+      const type = data[SYMBOL];
+
+      if (type === "port") {
+        const port = deserializePort(data.port);
+        ports.push(port);
+        return port;
+      } else if (type) {
+        const url = new URL(data.blob);
+        if (url.protocol === "blob:") {
+          const buffer = await (await fetch(url.href)).arrayBuffer();
+          switch (type) {
+            case "uint16=":
+              return new Uint16Array(buffer);
+            case "uint8":
+              return new Uint8Array(buffer);
+            case "uint32":
+              return new Uint32Array(buffer);
+            case "buffer":
+              return buffer;
+          }
+        }
+      }
+
+      await Promise.all(
+        Object.keys(data).map(async (key) => {
+          data[key] = await deserialize(data[key], ports);
+        })
+      );
+    }
+
+    return data;
+  }
+
   return {
     postMessage: (message, transfer: MessagePort[]) => {
-      for (const port of transfer) {
-        const id = PORT_ID + `${+new Date()}${Math.random()}`;
-        (port as any)[PORT_ID] = id;
-        forward(port, resolvePort(id), resolvePort, deserializePort);
-      }
+      serialize(message);
       port.postMessage(message);
     },
     addEventListener: (_, handler) => {
-      const listener = (data: any) => {
+      const listener = async (data: any) => {
         const ports: MessagePort[] = [];
         const event = new MessageEvent("message", {
-          data: deserialize(data, ports, deserializePort),
+          data: await deserialize(data, ports),
           ports,
         });
 
@@ -109,5 +153,5 @@ export async function forward(
 }
 
 export function isMessagePort(port: { name: string }) {
-  return port.name.startsWith(PORT_ID);
+  return port.name.startsWith(SYMBOL);
 }
