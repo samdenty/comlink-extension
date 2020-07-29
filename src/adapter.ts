@@ -8,8 +8,6 @@ export type OnPortCallback = (port: Runtime.Port) => void;
 export type PortResolver = (id: string, onPort: OnPortCallback) => void;
 export type PortDeserializer = (id: string) => MessagePort;
 
-export type ResolvablePort = Promise<Runtime.Port> | Runtime.Port | string;
-
 function _resolvePort(id: string, onPort: OnPortCallback) {
   onPort(browser.runtime.connect(undefined, { name: id }));
 }
