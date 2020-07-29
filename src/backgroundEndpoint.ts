@@ -9,7 +9,7 @@ import {
 const portCallbacks = new Map<string, OnPortCallback[]>();
 const ports = new Map<string, Runtime.Port>();
 
-async function serializePort(id: string, onPort: OnPortCallback) {
+function serializePort(id: string, onPort: OnPortCallback) {
   if (!portCallbacks.has(id)) {
     portCallbacks.set(id, []);
   }
