@@ -1,4 +1,4 @@
-import { Runtime, browser } from "webextension-polyfill-ts";
+import browser, { Runtime } from "webextension-polyfill";
 import { forward, isMessagePort, createEndpoint } from "./adapter";
 
 const portCallbacks = new Map<string, ((port: Runtime.Port) => void)[]>();
