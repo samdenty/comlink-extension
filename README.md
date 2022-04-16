@@ -1,4 +1,6 @@
-# Comlink for Web Extensions
+# Comlink for Web Extensions [![Sponsors](https://img.shields.io/github/sponsors/samdenty?label=Sponsors)](https://github.com/sponsors/samdenty)
+
+[Sponsor this project](https://github.com/sponsors/samdenty)
 
 This module allows you to use [Comlink](https://github.com/GoogleChromeLabs/comlink) for `Background <-> Content/Popup` communication, in Chrome/Firefox/Safari extensions.
 
