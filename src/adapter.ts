@@ -3,18 +3,23 @@ import * as Comlink from "comlink";
 
 const SYMBOL = "__PORT__@";
 
-export type PortResolver = (id: string) => ResolvablePort;
+export type OnPortCallback = (port: Runtime.Port) => void;
+
+export type PortResolver = (id: string, onPort: OnPortCallback) => void;
 export type PortDeserializer = (id: string) => MessagePort;
 
-export type ResolvablePort = Promise<Runtime.Port> | Runtime.Port | string;
-
-function _resolvePort(id: string) {
-  return id;
+function _resolvePort(id: string, onPort: OnPortCallback) {
+  onPort(browser.runtime.connect(undefined, { name: id }));
 }
 
 function _deserializePort(id: string) {
   const { port1, port2 } = new MessageChannel();
-  forward(port1, id, _resolvePort, _deserializePort);
+  forward(
+    port1,
+    browser.runtime.connect(undefined, { name: id }),
+    _resolvePort,
+    _deserializePort
+  );
   return port2;
 }
 
@@ -35,7 +40,9 @@ export function createEndpoint(
         const id = SYMBOL + `${+new Date()}${Math.random()}`;
         (data as any)[SYMBOL] = "port";
         (data as any).port = id;
-        forward(data, resolvePort(id), resolvePort, deserializePort);
+        resolvePort(id, (port) =>
+          forward(data, port, resolvePort, deserializePort)
+        );
       } else if (data instanceof ArrayBuffer) {
         (data as any)[SYMBOL] =
           data instanceof Uint8Array
@@ -129,25 +136,19 @@ export function createEndpoint(
   };
 }
 
-export async function forward(
+export function forward(
   messagePort: MessagePort,
-  extensionPort: ResolvablePort,
+  extensionPort: Runtime.Port,
   resolvePort: PortResolver = _resolvePort,
   deserializePort: PortDeserializer = _deserializePort
 ) {
-  if (typeof extensionPort === "string") {
-    extensionPort = browser.runtime.connect(undefined, { name: extensionPort });
-  }
+  const port = createEndpoint(extensionPort, resolvePort, deserializePort);
 
-  const port = Promise.resolve(extensionPort).then((port) =>
-    createEndpoint(port, resolvePort, deserializePort)
-  );
-
-  messagePort.onmessage = async ({ data, ports }) => {
-    (await port).postMessage(data, ports as any);
+  messagePort.onmessage = ({ data, ports }) => {
+    port.postMessage(data, ports as any);
   };
 
-  (await port).addEventListener("message", ({ data, ports }: any) => {
+  port.addEventListener("message", ({ data, ports }: any) => {
     messagePort.postMessage(data, ports as any);
   });
 }

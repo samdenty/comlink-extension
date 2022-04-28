@@ -1,17 +1,20 @@
 import { Runtime, browser } from "webextension-polyfill-ts";
-import { forward, isMessagePort, createEndpoint } from "./adapter";
+import {
+  forward,
+  isMessagePort,
+  createEndpoint,
+  OnPortCallback,
+} from "./adapter";
 
-const portCallbacks = new Map<string, ((port: Runtime.Port) => void)[]>();
+const portCallbacks = new Map<string, OnPortCallback[]>();
 const ports = new Map<string, Runtime.Port>();
 
-async function serializePort(id: string) {
+function serializePort(id: string, onPort: OnPortCallback) {
   if (!portCallbacks.has(id)) {
     portCallbacks.set(id, []);
   }
   const callbacks = portCallbacks.get(id)!;
-  return new Promise<Runtime.Port>((resolve) => {
-    callbacks.push((port) => resolve(port));
-  });
+  callbacks.push(onPort);
 }
 
 function deserializePort(id: string) {
