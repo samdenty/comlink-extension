@@ -1,4 +1,4 @@
-import { browser, Runtime } from "webextension-polyfill-ts";
+import browser, { Runtime } from "webextension-polyfill";
 import * as Comlink from "comlink";
 
 const SYMBOL = "__PORT__@";
