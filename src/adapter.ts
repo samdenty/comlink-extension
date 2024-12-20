@@ -27,7 +27,7 @@ export function createEndpoint(
 
   function serialize(data: any): void {
     if (Array.isArray(data)) {
-      data.forEach((value, i) => {
+      data.forEach((value) => {
         serialize(value);
       });
     } else if (data && typeof data === "object") {
@@ -97,7 +97,7 @@ export function createEndpoint(
   }
 
   return {
-    postMessage: (message, transfer: MessagePort[]) => {
+    postMessage: (message) => {
       serialize(message);
       port.postMessage(message);
     },
